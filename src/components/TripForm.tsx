@@ -290,20 +290,22 @@ const TripForm: React.FC<TripFormProps> = ({ onSubmit, loading }) => {
                 </p>
               </div>
 
-              <div className="space-y-2">
-                <label className="block text-sm font-medium text-gray-300">
-                  Timezone
-                </label>
-                <div className="relative">
-                  <input
-                    type="text"
-                    value={timezone}
-                    readOnly
-                    className="w-full bg-gray-700/50 border border-gray-600 text-white rounded-lg px-4 py-3 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  />
-                </div>
-                <p className="text-sm text-gray-400">
-                  Your detected timezone (used for ELD logs)
+              <div className="pt-2">
+                <p className="text-sm text-gray-400 italic">
+                  <svg
+                    className="w-4 h-4 inline-block mr-1"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth="2"
+                      d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                    ></path>
+                  </svg>
+                  Using your timezone: {timezone} (for ELD logs)
                 </p>
               </div>
 
