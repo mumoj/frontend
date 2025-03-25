@@ -1,15 +1,17 @@
 import React from 'react';
 import { Nav, Tab } from 'react-bootstrap';
-import { DailyLog } from '../types';
+import { DailyLog, Trip } from '../types';
+import ELDLogGenerator from './ELDLogGenerator';
 
 interface LogViewerProps {
   logs: DailyLog[];
   activeLog: number;
   onLogChange: (index: number) => void;
+  trip: Trip | null;
 }
 
-const LogViewer: React.FC<LogViewerProps> = ({ logs, activeLog, onLogChange }) => {
-  if (!logs || logs.length === 0) {
+const LogViewer: React.FC<LogViewerProps> = ({ logs, activeLog, onLogChange, trip }) => {
+  if (!logs || logs.length === 0 || !trip) {
     return (
       <div className="bg-white/90 rounded-xl p-8 text-center border border-gray-200 shadow-sm">
         <div className="w-20 h-20 mx-auto bg-gray-100 rounded-full flex items-center justify-center mb-4">
@@ -102,32 +104,9 @@ const LogViewer: React.FC<LogViewerProps> = ({ logs, activeLog, onLogChange }) =
           {logs.map((log, index) => (
             <Tab.Pane key={log.id} eventKey={index.toString()}>
               <div className="space-y-6">
-                {/* Log Image */}
-                <div className="bg-gray-50 rounded-lg border border-gray-200 overflow-hidden">
-                  {log.log_image ? (
-                    <img
-                      src={log.log_image}
-                      alt={`Daily log for ${log.date}`}
-                      className="w-full h-auto object-contain"
-                    />
-                  ) : (
-                    <div className="p-8 text-center">
-                      <svg 
-                        className="w-12 h-12 mx-auto text-gray-400" 
-                        fill="none" 
-                        stroke="currentColor" 
-                        viewBox="0 0 24 24"
-                      >
-                        <path 
-                          strokeLinecap="round" 
-                          strokeLinejoin="round" 
-                          strokeWidth="1.5" 
-                          d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
-                        ></path>
-                      </svg>
-                      <p className="mt-2 text-gray-500">Log image not available</p>
-                    </div>
-                  )}
+                {/* Log Canvas - Generate ELD Log client-side */}
+                <div className="bg-gray-50 rounded-lg border border-gray-200 overflow-hidden p-4">
+                  <ELDLogGenerator dailyLog={log} trip={trip} />
                 </div>
 
                 {/* Log Entries */}

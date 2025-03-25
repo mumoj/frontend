@@ -136,6 +136,7 @@ const ResultsSection: React.FC<ResultsSectionProps> = ({
                         logs={dailyLogs}
                         activeLog={activeLog}
                         onLogChange={handleLogChange}
+                        trip={trip}
                       />
                     </Card.Body>
                   </Card>
