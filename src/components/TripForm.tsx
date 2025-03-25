@@ -7,8 +7,9 @@ interface TripFormProps {
     currentLocation: Location,
     pickupLocation: Location,
     dropoffLocation: Location,
-    cycleHours: number
-  ) => void; // Changed to void to match Header's expectation
+    cycleHours: number,
+    timezone: string
+  ) => void;
   loading: boolean;
 }
 
@@ -18,6 +19,7 @@ const TripForm: React.FC<TripFormProps> = ({ onSubmit, loading }) => {
   const [pickupLocation, setPickupLocation] = useState<Location | null>(null);
   const [dropoffLocation, setDropoffLocation] = useState<Location | null>(null);
   const [cycleHours, setCycleHours] = useState<number>(0);
+  const [timezone, setTimezone] = useState<string>(Intl.DateTimeFormat().resolvedOptions().timeZone);
   const [loadingLocations, setLoadingLocations] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -64,7 +66,7 @@ const TripForm: React.FC<TripFormProps> = ({ onSubmit, loading }) => {
     }
 
     setError(null);
-    onSubmit(currentLocation, pickupLocation, dropoffLocation, cycleHours);
+    onSubmit(currentLocation, pickupLocation, dropoffLocation, cycleHours, timezone);
   };
 
   const openMapPicker = (mode: "current" | "pickup" | "dropoff") => {
@@ -285,6 +287,23 @@ const TripForm: React.FC<TripFormProps> = ({ onSubmit, loading }) => {
                 </div>
                 <p className="text-sm text-gray-400">
                   Hours of service used in current 8-day cycle (0-70)
+                </p>
+              </div>
+
+              <div className="space-y-2">
+                <label className="block text-sm font-medium text-gray-300">
+                  Timezone
+                </label>
+                <div className="relative">
+                  <input
+                    type="text"
+                    value={timezone}
+                    readOnly
+                    className="w-full bg-gray-700/50 border border-gray-600 text-white rounded-lg px-4 py-3 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  />
+                </div>
+                <p className="text-sm text-gray-400">
+                  Your detected timezone (used for ELD logs)
                 </p>
               </div>
 

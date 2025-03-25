@@ -47,7 +47,8 @@ const App: React.FC = () => {
     currentLocation: Location,
     pickupLocation: Location,
     dropoffLocation: Location,
-    cycleHours: number
+    cycleHours: number,
+    timezone: string
   ) => {
     setLoading(true);
     setError(null);
@@ -68,6 +69,7 @@ const App: React.FC = () => {
           pickup_location: pickupLocation.id,
           dropoff_location: dropoffLocation.id,
           current_cycle_hours: cycleHours,
+          client_timezone: timezone, // Add timezone information
           driver: 1,
           status: "planned",
         }),

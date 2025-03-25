@@ -96,7 +96,7 @@ const ELDLogGenerator: React.FC<ELDLogGeneratorProps> = ({ dailyLog, trip }) => 
     ctx.fillText(subtitle, textBlockLeft, 40);
     
     // Right header
-    ctx.fillText("ORIGINAL — Submit to carrier within 13 days", width/2 + 150, 20);
+    ctx.fillText("ORIGINAL — File at Home Termnal", width/2 + 150, 20);
     ctx.fillText("DUPLICATE — Driver retains possession for eight days", width/2 + 150, 40);
     
     // Draw minimal driver info section
@@ -111,7 +111,7 @@ const ELDLogGenerator: React.FC<ELDLogGeneratorProps> = ({ dailyLog, trip }) => 
       "Carrier Name";
     
     ctx.font = 'bold 16px Arial';
-    ctx.fillText(carrierName, 20, 75);
+    ctx.fillText(carrierName, 20, 85);
     
     ctx.font = '10px Arial';
     ctx.fillText("(NAME OF CARRIER OR CARRIERS)", 20, 95);
@@ -122,7 +122,7 @@ const ELDLogGenerator: React.FC<ELDLogGeneratorProps> = ({ dailyLog, trip }) => 
       "Driver Name";
     
     ctx.font = 'bold 16px Arial';
-    ctx.fillText(driverName, width - 250, 75);
+    ctx.fillText(driverName, width - 250, 85);
     
     ctx.font = '10px Arial';
     ctx.fillText("(DRIVER'S SIGNATURE IN FULL)", width - 250, 95);
@@ -271,28 +271,32 @@ const ELDLogGenerator: React.FC<ELDLogGeneratorProps> = ({ dailyLog, trip }) => 
       'on_duty': 0
     };
     
-    // Group entries by status to create continuous lines
-    const statusSegments: Record<string, [number, number][]> = {
-      'off_duty': [],
-      'sleeper': [],
-      'driving': [],
-      'on_duty': []
-    };
-    
     // Sort entries by start time
     const sortedEntries = [...entries].sort((a, b) => {
       return new Date(a.start_time).getTime() - new Date(b.start_time).getTime();
     });
     
-    // Process all entries to identify continuous segments by status
-    for (const entry of sortedEntries) {
+    // Create a timeline of status changes including vertical lines
+    interface StatusPoint {
+      time: number;  // In minutes from midnight
+      status: string;
+      x: number;     // X position on grid
+      y: number;     // Y position on grid (center of row)
+      isStart: boolean; // Whether this is the start or end of a segment
+    }
+    
+    const statusTimeline: StatusPoint[] = [];
+    
+    // Process entries to build the timeline
+    for (let i = 0; i < sortedEntries.length; i++) {
+      const entry = sortedEntries[i];
       if (!entry.end_time) continue;
-        
-      // Convert to local time and extract hours and minutes
+      
+      // Convert times to local and extract minutes from midnight
       const startDate = new Date(entry.start_time);
       const endDate = new Date(entry.end_time);
       
-      // Calculate position on grid using local time
+      // Calculate minutes from midnight
       const startMinutes = (startDate.getHours() * 60) + startDate.getMinutes();
       let endMinutes = (endDate.getHours() * 60) + endDate.getMinutes();
       
@@ -301,58 +305,94 @@ const ELDLogGenerator: React.FC<ELDLogGeneratorProps> = ({ dailyLog, trip }) => 
         endMinutes = 24 * 60;  // End at midnight
       }
       
+      // Calculate positions
       const startX = gridLeft + (startMinutes * gridWidth / (24 * 60));
       const endX = gridLeft + (endMinutes * gridWidth / (24 * 60));
+      const rowIndex = statusMap[entry.status] || 0;
+      const y = gridTop + (rowIndex * rowHeight) + (rowHeight / 2);
+      
+      // Add start point
+      statusTimeline.push({
+        time: startMinutes,
+        status: entry.status,
+        x: startX,
+        y: y,
+        isStart: true
+      });
+      
+      // Add end point
+      statusTimeline.push({
+        time: endMinutes,
+        status: entry.status,
+        x: endX,
+        y: y,
+        isStart: false
+      });
       
       // Calculate duration in hours
       const durationSeconds = (endMinutes - startMinutes) * 60;
       const durationHours = durationSeconds / 3600;
       hoursByStatus[entry.status] += durationHours;
-      
-      // Add segment to appropriate status group
-      statusSegments[entry.status].push([startX, endX]);
     }
     
-    // Draw segments for each status
-    for (const [status, segments] of Object.entries(statusSegments)) {
-      if (!segments.length) continue;
-        
-      // Sort segments by start time
-      const sortedSegments = [...segments].sort((a, b) => a[0] - b[0]);
+    // Sort timeline by time
+    statusTimeline.sort((a, b) => a.time - b.time);
+    
+    // Draw status lines including vertical connections
+    ctx.strokeStyle = 'blue';
+    ctx.lineWidth = 3;
+    
+    // Keep track of current status for each row
+    const activeStatus: Record<string, boolean> = {
+      'off_duty': false,
+      'sleeper': false,
+      'driving': false,
+      'on_duty': false
+    };
+    
+    if (statusTimeline.length > 0) {
+      // Start drawing path
+      ctx.beginPath();
       
-      // Merge overlapping segments
-      const mergedSegments: [number, number][] = [];
-      let currentSegment = sortedSegments[0];
-      
-      for (let i = 1; i < sortedSegments.length; i++) {
-        const nextSegment = sortedSegments[i];
+      // Process each status change
+      for (let i = 0; i < statusTimeline.length; i++) {
+        const point = statusTimeline[i];
         
-        // If segments touch or overlap, merge them
-        if (nextSegment[0] <= currentSegment[1]) {
-          currentSegment = [currentSegment[0], Math.max(currentSegment[1], nextSegment[1])];
+        if (point.isStart) {
+          // Starting a new segment
+          activeStatus[point.status] = true;
+          ctx.moveTo(point.x, point.y);
+          
+          // Connect from previous status vertically if needed
+          const prevIndex = i - 1;
+          if (prevIndex >= 0 && !statusTimeline[prevIndex].isStart) {
+            const prevPoint = statusTimeline[prevIndex];
+            if (prevPoint.x === point.x && prevPoint.status !== point.status) {
+              // Draw vertical line connecting points
+              ctx.lineTo(point.x, point.y);
+            }
+          }
         } else {
-          // No overlap, add current segment and start a new one
-          mergedSegments.push(currentSegment);
-          currentSegment = nextSegment;
+          // Ending a segment
+          activeStatus[point.status] = false;
+          
+          // Draw horizontal line to end of segment
+          ctx.lineTo(point.x, point.y);
+          
+          // Check if we need to connect to next status
+          const nextIndex = i + 1;
+          if (nextIndex < statusTimeline.length && statusTimeline[nextIndex].isStart) {
+            const nextPoint = statusTimeline[nextIndex];
+            if (nextPoint.x === point.x) {
+              // Draw vertical line to next status
+              ctx.lineTo(nextPoint.x, nextPoint.y);
+            }
+          }
         }
       }
       
-      // Add the last segment
-      mergedSegments.push(currentSegment);
-      
-      // Draw continuous blue line for each merged segment
-      const statusIdx = statusMap[status] || 0;
-      const yPos = gridTop + (statusIdx * rowHeight) + (rowHeight / 2);
-      
-      ctx.strokeStyle = 'blue';
-      ctx.lineWidth = 3;
-      
-      for (const [startX, endX] of mergedSegments) {
-        ctx.beginPath();
-        ctx.moveTo(startX, yPos);
-        ctx.lineTo(endX, yPos);
-        ctx.stroke();
-      }
+      // Draw all paths at once
+      ctx.stroke();
     }
     
     // Helper function to convert decimal hours to HH:MM:SS format

@@ -8,7 +8,8 @@ interface HeaderProps {
     currentLocation: Location,
     pickupLocation: Location,
     dropoffLocation: Location,
-    cycleHours: number
+    cycleHours: number,
+    timezone: string
   ) => void;
   loading: boolean;
 }
