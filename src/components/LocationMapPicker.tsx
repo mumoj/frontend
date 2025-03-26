@@ -3,6 +3,8 @@ import { Modal, Button, Form } from 'react-bootstrap';
 import { MapContainer, TileLayer, Marker, useMapEvents } from 'react-leaflet';
 import L from 'leaflet';
 import { Location } from '../types';
+import { apiRequest } from '../services/api';
+
 
 interface LocationMapPickerProps {
   show: boolean;
@@ -185,7 +187,7 @@ const LocationMapPicker: React.FC<LocationMapPickerProps> = ({
         headers['X-CSRFToken'] = csrfToken;
       }
 
-      const response = await fetch('/api/locations/', {
+      const response = await apiRequest('/api/locations/', {
         method: 'POST',
         headers: headers,
         credentials: 'include', // Important for sending cookies

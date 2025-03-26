@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Modal, Button, Form, Alert, Spinner } from 'react-bootstrap';
+import { apiRequest } from '../services/api';
 
 interface AddLocationProps {
   show: boolean;
@@ -54,7 +55,7 @@ const AddLocation: React.FC<AddLocationProps> = ({ show, onHide, onLocationAdded
     setLoading(true);
     
     try {
-      const response = await fetch('/api/locations/', {
+      const response = await apiRequest('/api/locations/', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

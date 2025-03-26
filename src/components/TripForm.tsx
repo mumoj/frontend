@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { Location } from "../types";
 import LocationMapPicker from "./LocationMapPicker";
+import { apiRequest } from '../services/api';
+
 
 interface TripFormProps {
   onSubmit: (
@@ -32,7 +34,7 @@ const TripForm: React.FC<TripFormProps> = ({ onSubmit, loading }) => {
     const fetchLocations = async () => {
       setLoadingLocations(true);
       try {
-        const response = await fetch("/api/locations/");
+        const response = await apiRequest("/api/locations/");
         if (!response.ok) throw new Error("Failed to fetch locations");
         const data = await response.json();
         setLocations(data);

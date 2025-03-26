@@ -5,6 +5,7 @@ import ResultsSection from "./components/ResultsSection"; // Import ResultsSecti
 import { Location, Trip, RouteStop, DailyLog } from "./types";
 import "./App.css";
 import Header from "./components/Header";
+import { apiRequest } from './services/api';
 
 const App: React.FC = () => {
   const [trip, setTrip] = useState<Trip | null>(null);
@@ -60,7 +61,7 @@ const App: React.FC = () => {
       };
       if (csrfToken) headers["X-CSRFToken"] = csrfToken;
 
-      const tripResponse = await fetch("/api/trips/", {
+      const tripResponse = await apiRequest("/api/trips/", {
         method: "POST",
         headers,
         credentials: "include",
@@ -83,7 +84,7 @@ const App: React.FC = () => {
       const tripData = await tripResponse.json();
       setTrip(tripData);
 
-      const routeResponse = await fetch(`/api/trips/${tripData.id}/calculate_route/`, {
+      const routeResponse = await apiRequest(`/api/trips/${tripData.id}/calculate_route/`, {
         method: "GET",
         headers: {
           "X-Requested-With": "XMLHttpRequest",
