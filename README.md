@@ -18,7 +18,7 @@ A React-based frontend for the Trip Planner & ELD Logger application. The app en
 - **React Bootstrap** for UI components
 - **Leaflet/React-Leaflet** for interactive maps
 - **TailwindCSS** for responsive styling
-- **Axios** for API requests
+
 
 ## 🏗️ Project Structure
 
