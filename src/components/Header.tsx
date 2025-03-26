@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import NavBar from "./NavBar";
 import TripForm from "./TripForm";
 import { Location } from "../types";
+import SpotterLogo from "../assets/spotter-logo.png";
 
 interface HeaderProps {
   onTripSubmit: (
@@ -55,7 +56,17 @@ const Header: React.FC<HeaderProps> = ({ onTripSubmit, loading }) => {
       <div className="container mx-auto px-4 md:px-8 pt-32 pb-32 relative z-10">
         <div className="flex flex-col items-center text-center space-y-10">
           <div className="flex flex-col items-center space-y-6 group">
+          <div className="relative">
+              <img
+                src={SpotterLogo}
+                alt="Spotter Logo"
+                className="h-20 w-auto transition-all duration-700 group-hover:scale-110 group-hover:rotate-6"
+              />
+              <div className="absolute -inset-4 bg-blue-500/10 rounded-full blur-md opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+            </div>
+
             <h1 className="text-5xl md:text-6xl font-extrabold tracking-tight leading-tight">
+
               <span className="bg-clip-text text-transparent bg-gradient-to-r from-blue-400 via-white to-blue-300 animate-text-shine">
                 Trip Planner
               </span>
